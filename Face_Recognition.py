@@ -53,8 +53,8 @@ upper_body = cv2.CascadeClassifier('/home/hfernandez/PycharmProjects/untitled/op
 face_cascade = cv2.CascadeClassifier('./opencv-3.4.0/data/haarcascades/haarcascade_frontalcatface.xml')
 eye_cascade = cv2.CascadeClassifier('./opencv-3.4.0/data/haarcascades/haarcascade_eye.xml')
 #cap = cv2.VideoCapture("/home/hfernandez/PycharmProjects/untitled/videos/test1.mp4")
-cap = cv2.VideoCapture("/home/hfernandez/PycharmProjects/untitled/videos/test3_2_up_down.mp4")
-#cap = cv2.VideoCapture("/home/hfernandez/PycharmProjects/untitled/videos/test6_doble_abrazo.mp4")
+#cap = cv2.VideoCapture("/home/hfernandez/PycharmProjects/untitled/videos/test3_2_up_down.mp4")
+cap = cv2.VideoCapture("/home/hfernandez/PycharmProjects/untitled/videos/test6_doble_abrazo.mp4")
 #cap = cv2.VideoCapture("/home/hfernandez/PycharmProjects/untitled/videos/test10_bola.mp4")
 w = cap.get(3)
 h = cap.get(4)
@@ -71,7 +71,7 @@ line_down_color = (255,0,0)
 line_up_color = (0,0,255)
 
 #img = cv2.imread('/home/hfernandez/Descargas/prueba1.jpeg')
-kernelCl = np.ones((11, 11), np.uint8)
+kernelCl = np.ones((100, 1), np.uint8)
 kernelOp = np.ones((3, 3), np.uint8)
 fgbg = cv2.createBackgroundSubtractorMOG2(detectShadows=True)  # Create the background substractor
 i = 0
@@ -81,20 +81,39 @@ while(cap.isOpened()):
         firs_frame = convert_to_gray(frame)
     i+=1
     try:
-        #frame_transform = convert_to_gray(frame)
-        #frame_transform = diff(firs_frame, frame_transform)
-        #frame_transform = convert_to_black_white(frame_transform, 12, 60)
-        frame_transform, contours = first_filter(fgbg, frame, kernelCl, kernelOp)
 
-        for countour in contours:
+        frame_transform = convert_to_gray(frame)
+        frame_transform = diff(firs_frame, frame_transform)
+        #frame_transform = convert_to_black_white(frame_transform, 12, 60)
+
+        frame_transform = convert_to_black_white(frame_transform, 60, 220)
+
+        #
+        #
+        #frame_transform, contours = first_filter(fgbg, frame, kernelCl, kernelOp)
+        frame_transform = cv2.medianBlur(frame_transform,5)
+        #frame_transform=cv2.bilateralFilter(frame_transform, 9, 75, 75)
+        #frame_transform = cv2.morphologyEx(frame_transform, cv2.MORPH_OPEN, kernelOp)
+        frame_transform = cv2.morphologyEx(frame_transform, cv2.MORPH_CLOSE, kernelCl)
+        contours = cv2.findContours(frame_transform, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        #frame_transform = cv2.Canny(frame_transform, 180, 260)
+        #frame_transform, contours = first_filter(fgbg, frame_transform, kernelCl, kernelOp)
+
+        for countour in contours[1]:
             area = cv2.contourArea(countour)
             if area > areaTH:
                 M = cv2.moments(countour)
                 cx = int(M['m10'] / M['m00'])
                 cy = int(M['m01'] / M['m00'])
                 x, y, w, h = cv2.boundingRect(countour)
-                if area > 80000 and area<650000:
-                    cv2.rectangle(frame_transform, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                if area > 20000 and area <50000:
+                    cv2.rectangle(frame_transform, (x, y), (x + w, y + h), (255, 0, 0), 1)
+                    pass
+                elif area > 50000 and area<80000:
+                    cv2.rectangle(frame_transform, (x, y), (x + w, y + h), (0, 255, 0), 1)
+                    pass
+                elif area>650000:
+                    cv2.rectangle(frame_transform, (x, y), (x + w, y + h), (0, 0, 255), 1)
                     pass
 
 
